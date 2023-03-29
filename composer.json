@@ -10,6 +10,7 @@
         "api-platform/core": "^3.1",
         "doctrine/annotations": "^2.0",
         "doctrine/doctrine-bundle": "^2.9",
+        "doctrine/doctrine-fixtures-bundle": "^3.4",
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.14",
         "nelmio/cors-bundle": "^2.3",
@@ -78,5 +79,10 @@
             "allow-contrib": false,
             "require": "6.2.*"
         }
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.21",
+        "mbezhanov/faker-provider-collection": "^2.0",
+        "symfony/maker-bundle": "^1.48"
     }
 }
