@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Repository\ProductAttributRepository;
 use App\Trait\TimestampableTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -9,24 +11,37 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ProductAttributRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: [
+                'groups' => [
+                    'read:data:generic',
+                    'read:product-attribut'
+                ]
+            ]
+        )
+    ]
+)]
 class ProductAttribut
 {
     use TimestampableTrait;
 
+    #[Groups(["read:data:generic"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["product:generic"])]
+    #[Groups(["read:product-attribut"])]
     #[ORM\Column(length: 100)]
     private ?string $name = null;
 
-    #[Groups(["product:generic"])]
+    #[Groups(["read:product-attribut"])]
     #[ORM\Column(length: 150)]
     private ?string $value = null;
 
-    #[Groups(["product:generic"])]
+    #[Groups(["read:product-attribut"])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?ProductAttributCategory $productAttributCategory = null;

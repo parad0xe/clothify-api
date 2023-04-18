@@ -2,17 +2,42 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Patch;
 use App\Repository\UserRepository;
 use App\Trait\TimestampableTrait;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\HasLifecycleCallbacks]
+#[ApiResource(
+    operations: [
+        new Get(
+            normalizationContext: [
+                "groups" => [
+                    "read:data:generic",
+                    "read:user",
+                    "read:address"
+                ]
+            ]
+        ),
+        new Patch(
+            normalizationContext: [
+                'groups' => [
+                    "read:data:generic",
+                    "read:user",
+                    "read:address"
+                ]
+            ]
+        )
+    ]
+)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use TimestampableTrait;
@@ -20,171 +45,118 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups("read:data:generic")]
     private ?int $id = null;
 
+    #[Groups("read:user")]
     #[ORM\Column(length: 100)]
     private ?string $username = null;
 
+    #[Groups("read:user")]
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $firstname = null;
 
+    #[Groups("read:user")]
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $lastname = null;
 
+    #[Groups("read:user")]
     #[ORM\Column(length: 255)]
     private ?string $email = null;
+
+    #[Groups("read:user")]
+    #[ORM\Column(length: 255)]
+    private ?string $phone = null;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $password = null;
 
+    #[Groups("read:user")]
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Address $billingAddress = null;
 
+    #[Groups("read:user")]
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Address $deliveryAddress = null;
 
-    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
-    private ?Cart $cart = null;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: ArchiveCart::class)]
-    private Collection $archiveCarts;
-
-    public function __construct()
-    {
-        $this->archiveCarts = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
+    public function getId(): ?int {
         return $this->id;
     }
 
-    public function getUsername(): ?string
-    {
+    public function getUsername(): ?string {
         return $this->username;
     }
 
-    public function setUsername(string $username): self
-    {
+    public function setUsername(string $username): self {
         $this->username = $username;
 
         return $this;
     }
 
-    public function getFirstname(): ?string
-    {
+    public function getFirstname(): ?string {
         return $this->firstname;
     }
 
-    public function setFirstname(?string $firstname): self
-    {
+    public function setFirstname(?string $firstname): self {
         $this->firstname = $firstname;
 
         return $this;
     }
 
-    public function getLastname(): ?string
-    {
+    public function getLastname(): ?string {
         return $this->lastname;
     }
 
-    public function setLastname(?string $lastname): self
-    {
+    public function setLastname(?string $lastname): self {
         $this->lastname = $lastname;
 
         return $this;
     }
 
-    public function getEmail(): ?string
-    {
+    public function getEmail(): ?string {
         return $this->email;
     }
 
-    public function setEmail(string $email): self
-    {
+    public function setEmail(string $email): self {
         $this->email = $email;
 
         return $this;
     }
 
-    public function getCart(): ?Cart
-    {
-        return $this->cart;
+    public function getPhone(): ?string {
+        return $this->phone;
     }
 
-    public function setCart(Cart $cart): self
-    {
-        // set the owning side of the relation if necessary
-        if ($cart->getUser() !== $this) {
-            $cart->setUser($this);
-        }
-
-        $this->cart = $cart;
-
+    public function setPhone(?string $phone): self {
+        $this->phone = $phone;
         return $this;
     }
 
-    /**
-     * @return Collection<int, ArchiveCart>
-     */
-    public function getArchiveCarts(): Collection
-    {
-        return $this->archiveCarts;
-    }
-
-    public function addArchiveCart(ArchiveCart $archiveCart): self
-    {
-        if (!$this->archiveCarts->contains($archiveCart)) {
-            $this->archiveCarts->add($archiveCart);
-            $archiveCart->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeArchiveCart(ArchiveCart $archiveCart): self
-    {
-        if ($this->archiveCarts->removeElement($archiveCart)) {
-            // set the owning side to null (unless already changed)
-            if ($archiveCart->getUser() === $this) {
-                $archiveCart->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function getBillingAddress(): ?Address
-    {
+    public function getBillingAddress(): ?Address {
         return $this->billingAddress;
     }
 
-    public function setBillingAddress(?Address $billingAddress): self
-    {
+    public function setBillingAddress(?Address $billingAddress): self {
         $this->billingAddress = $billingAddress;
 
         return $this;
     }
 
-    public function getDeliveryAddress(): ?Address
-    {
+    public function getDeliveryAddress(): ?Address {
         return $this->deliveryAddress;
     }
 
-    public function setDeliveryAddress(?Address $deliveryAddress): self
-    {
+    public function setDeliveryAddress(?Address $deliveryAddress): self {
         $this->deliveryAddress = $deliveryAddress;
 
         return $this;
     }
 
-    public function getPassword(): ?string
-    {
+    public function getPassword(): ?string {
         return $this->password;
     }
 
-    public function setPassword(string $password): self
-    {
+    public function setPassword(string $password): self {
         $this->password = $password;
 
         return $this;

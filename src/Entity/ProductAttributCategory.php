@@ -13,12 +13,13 @@ class ProductAttributCategory
 {
     use TimestampableTrait;
 
+    #[Groups(["read:data:generic"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["product:generic"])]
+    #[Groups(["read:product-attribut-category"])]
     #[ORM\Column(length: 150)]
     private ?string $name = null;
 

@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\CartProduct;
+use App\Entity\CartItem;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<CartProduct>
+ * @extends ServiceEntityRepository<CartItem>
  *
- * @method CartProduct|null find($id, $lockMode = null, $lockVersion = null)
- * @method CartProduct|null findOneBy(array $criteria, array $orderBy = null)
- * @method CartProduct[]    findAll()
- * @method CartProduct[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method CartItem|null find($id, $lockMode = null, $lockVersion = null)
+ * @method CartItem|null findOneBy(array $criteria, array $orderBy = null)
+ * @method CartItem[]    findAll()
+ * @method CartItem[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class CartProductRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, CartProduct::class);
+        parent::__construct($registry, CartItem::class);
     }
 
-    public function save(CartProduct $entity, bool $flush = false): void
+    public function save(CartItem $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class CartProductRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(CartProduct $entity, bool $flush = false): void
+    public function remove(CartItem $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +40,7 @@ class CartProductRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return CartProduct[] Returns an array of CartProduct objects
+//     * @return CartItem[] Returns an array of CartItem objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +54,7 @@ class CartProductRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?CartProduct
+//    public function findOneBySomeField($value): ?CartItem
 //    {
 //        return $this->createQueryBuilder('c')
 //            ->andWhere('c.exampleField = :val')

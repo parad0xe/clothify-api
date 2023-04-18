@@ -6,6 +6,7 @@ use App\Repository\AddressRepository;
 use App\Trait\TimestampableTrait;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -16,19 +17,24 @@ class Address
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups("read:data:generic")]
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups("read:address")]
     private ?string $address = null;
 
     #[ORM\Column(length: 150)]
+    #[Groups("read:address")]
     private ?string $city = null;
 
     #[ORM\Column(length: 150)]
+    #[Groups("read:address")]
     private ?string $country = null;
 
     #[ORM\Column]
-    private ?int $postalCode = null;
+    #[Groups("read:address")]
+    private ?string $postalCode = null;
 
     public function getId(): ?int
     {
@@ -71,12 +77,12 @@ class Address
         return $this;
     }
 
-    public function getPostalCode(): ?int
+    public function getPostalCode(): ?string
     {
         return $this->postalCode;
     }
 
-    public function setPostalCode(int $postalCode): self
+    public function setPostalCode(string $postalCode): self
     {
         $this->postalCode = $postalCode;
 

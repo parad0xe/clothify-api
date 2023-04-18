@@ -11,16 +11,17 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: ProductRatingRepository::class)]
 class ProductRating
 {
+    #[Groups(["read:data:generic"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(["product:generic"])]
+    #[Groups(["read:product-rating"])]
     #[ORM\Column(type: Types::TEXT)]
     private ?string $comment = null;
 
-    #[Groups(["product:generic"])]
+    #[Groups(["read:product-rating"])]
     #[ORM\Column]
     private ?float $rating = null;
 
