@@ -19,6 +19,7 @@ class UserFixtures extends Fixture
             ->setUsername("john")
             ->setFirstname("john")
             ->setLastname("doe")
+            ->setPhone("0011223344")
             ->setEmail("app@demo.com");
 
         $user->setPassword(

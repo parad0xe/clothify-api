@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\ProductAttributRepository;
 use App\Trait\TimestampableTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,12 +16,21 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new Get(
             normalizationContext: [
-                'groups' => [
-                    'read:data:generic',
-                    'read:product-attribut'
-                ]
+                'openapi_definition_name' => "Detail"
+            ]
+        ),
+        new GetCollection(
+            normalizationContext: [
+                'openapi_definition_name' => "Collection"
             ]
         )
+    ],
+    normalizationContext: [
+        "groups" => [
+            "read:data:generic",
+            "read:product-attribut",
+            "read:product-attribut-category"
+        ]
     ]
 )]
 class ProductAttribut

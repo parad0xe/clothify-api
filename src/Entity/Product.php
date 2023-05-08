@@ -2,10 +2,14 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Put;
+use App\Filter\BooleanFilter;
+use App\Filter\RangeFilter;
 use App\Repository\ProductRepository;
 use App\Trait\TimestampableTrait;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,22 +22,44 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new Get(),
-        new GetCollection()
+        new Get(
+            normalizationContext: [
+                'openapi_definition_name' => "Detail",
+                "groups" => [
+                    "read:data:generic",
+                    "read:product",
+                    "read:product-attribut",
+                    "read:product-attribut-category",
+                    "read:product-brand",
+                    "read:product-category",
+                    "read:product-collection",
+                    "read:product-rating"
+                ]
+            ]
+        ),
+        new GetCollection(
+            normalizationContext: [
+                'openapi_definition_name' => "Collection",
+                "groups" => [
+                    "read:data:generic",
+                    "read:product",
+                    "read:product-attribut",
+                    "read:product-attribut-category",
+                    "read:product-brand",
+                    "read:product-category",
+                    "read:product-collection",
+                    "read:product-rating"
+                ]
+            ]
+        )
     ],
-    normalizationContext: [
-        "groups" => [
-            "read:data:generic",
-            "read:product",
-            "read:product-attribut",
-            "read:product-attribut-category",
-            "read:product-brand",
-            "read:product-category",
-            "read:product-collection",
-            "read:product-rating"
-        ]
-    ]
+    order: ['price' => 'asc'],
+    paginationItemsPerPage: 40
 )]
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ["name" => "partial", "description" => "partial"])]
+#[ApiFilter(RangeFilter::class, properties: ["price", "rating" => "averageRating"])]
+#[ApiFilter(BooleanFilter::class, properties: ["new" => "isNew"])]
+#[ApiFilter(OrderFilter::class, properties: ['price', 'averageRating'], arguments: ['orderParameterName' => 'order'])]
 class Product
 {
     use TimestampableTrait;
@@ -75,6 +101,10 @@ class Product
     #[Groups(["read:product"])]
     #[ORM\Column]
     private ?bool $isNew = null;
+
+    #[Groups(["read:product"])]
+    #[ORM\Column]
+    private ?float $averageRating = null;
 
     #[Groups(["read:product"])]
     #[ORM\ManyToOne(inversedBy: 'products')]
@@ -177,6 +207,10 @@ class Product
         return $this;
     }
 
+    public function getAverageRating(): ?float {
+        return $this->averageRating;
+    }
+
     public function isIsAvailable(): ?bool {
         return $this->isAvailable;
     }
@@ -248,6 +282,7 @@ class Product
     public function addProductRating(ProductRating $productRating): self {
         if (!$this->productRating->contains($productRating)) {
             $this->productRating->add($productRating);
+            $this->averageRating = $this->calculateAverageRating();
             $productRating->setProduct($this);
         }
 
@@ -260,8 +295,22 @@ class Product
             if ($productRating->getProduct() === $this) {
                 $productRating->setProduct(null);
             }
+
+            $this->averageRating = $this->calculateAverageRating();
         }
 
         return $this;
+    }
+
+    public function calculateAverageRating(): float {
+        $sum = 0;
+        $count = 0;
+
+        foreach ($this->getProductRating() as $productRating) {
+            $sum += $productRating->getRating();
+            $count++;
+        }
+
+        return $count > 0 ? round($sum / $count, 3) : 0.0;
     }
 }

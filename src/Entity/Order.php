@@ -2,7 +2,11 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use App\Repository\OrderRepository;
 use App\Trait\TimestampableTrait;
@@ -16,8 +20,26 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
+        new Get(
+            normalizationContext: [
+                'openapi_definition_name' => "Detail",
+                'groups' => [
+                    "read:data:generic",
+                    "read:order",
+                    "read:order-item",
+                    "read:product",
+                    "read:product-attribut",
+                    "read:product-attribut-category",
+                    "read:product-brand",
+                    "read:product-category",
+                    "read:product-collection",
+                    "read:address"
+                ]
+            ]
+        ),
         new Post(
             normalizationContext: [
+                'openapi_definition_name' => "Post",
                 'groups' => [
                     'write:order'
                 ]
@@ -26,6 +48,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ]
 
 )]
+#[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ["reference" => "exact"])]
 class Order
 {
     use TimestampableTrait;
@@ -33,32 +56,38 @@ class Order
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["read:data:generic"])]
+    #[ApiProperty(identifier: false)]
     private ?int $id = null;
 
     #[ORM\Column(length: 200)]
-    #[Groups("write:order")]
+    #[Groups(["read:order", "write:order"])]
+    #[ApiProperty(identifier: true)]
     private ?string $reference = null;
 
     #[ORM\Column]
-    #[Groups("write:order")]
+    #[Groups(["read:order", "write:order"])]
     private ?float $totalCost = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups("write:order")]
+    #[Groups(["read:order", "write:order"])]
     private ?string $paymentMethod = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups("write:order")]
+    #[Groups(["write:order"])]
     private ?User $user = null;
 
-    #[ORM\OneToMany(mappedBy: 'purchase', targetEntity: OrderItem::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    #[Groups("write:order")]
+    #[ORM\OneToMany(mappedBy: 'purchase', targetEntity: OrderItem::class, cascade: [
+        'persist',
+        'remove'
+    ], orphanRemoval: true)]
+    #[Groups(["read:order", "write:order"])]
     private Collection $orderItems;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups("write:order")]
+    #[Groups(["read:order", "write:order"])]
     private ?Address $shippingAddress = null;
 
     public function __construct() {

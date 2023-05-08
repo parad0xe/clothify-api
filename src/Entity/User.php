@@ -5,11 +5,13 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Repository\UserRepository;
+use App\State\UserPostStateProcessor;
 use App\Trait\TimestampableTrait;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -20,15 +22,36 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new Get(
             normalizationContext: [
-                "groups" => [
+                'openapi_definition_name' => "Detail",
+                'groups' => [
                     "read:data:generic",
                     "read:user",
                     "read:address"
                 ]
             ]
         ),
+        new Post(
+            normalizationContext: [
+                'openapi_definition_name' => "Post",
+                'groups' => [
+                    "read:data:generic",
+                    "read:user",
+                    "read:address"
+                ]
+            ],
+            denormalizationContext: [
+                'groups' => [
+                    "read:data:generic",
+                    "read:user",
+                    "post:user",
+                    "read:address"
+                ]
+            ],
+            processor: UserPostStateProcessor::class
+        ),
         new Patch(
             normalizationContext: [
+                'openapi_definition_name' => "Patch",
                 'groups' => [
                     "read:data:generic",
                     "read:user",
@@ -38,6 +61,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         )
     ]
 )]
+#[UniqueEntity(fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     use TimestampableTrait;
@@ -69,6 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $phone = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups("post:user")]
     private ?string $password = null;
 
     #[Groups("read:user")]
