@@ -15,22 +15,32 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new Get(
+            openapiContext: [
+                'summary' => "Récupérer un attribut de produit à partir de son identifiant"
+            ],
             normalizationContext: [
-                'openapi_definition_name' => "Detail"
+                'openapi_definition_name' => "Detail",
+                "groups" => [
+                    "read:data:generic",
+                    "read:product-attribut",
+                    "read:product-attribut-category"
+                ]
             ]
         ),
         new GetCollection(
+            openapiContext: [
+                'summary' => "Récupérer tous les attributs de produits"
+            ],
+            paginationEnabled: false,
             normalizationContext: [
-                'openapi_definition_name' => "Collection"
+                'openapi_definition_name' => "Collection",
+                "groups" => [
+                    "read:data:generic",
+                    "read:product-attribut",
+                    "read:product-attribut-category"
+                ]
             ]
         )
-    ],
-    normalizationContext: [
-        "groups" => [
-            "read:data:generic",
-            "read:product-attribut",
-            "read:product-attribut-category"
-        ]
     ]
 )]
 class ProductAttribut

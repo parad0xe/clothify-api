@@ -19,9 +19,16 @@ class ApiPlatformTranslationListener implements EventSubscriberInterface
         $response = $event->getResponse();
         $data = json_decode($response->getContent(), true);
 
+        if(!$data) {
+            return;
+        }
+
         if (isset($data['hydra:title'])) {
             $data['hydra:title'] = $this->translator->trans($data['hydra:title'], domain: 'api-response');
-            $data['hydra:description'] = $this->translator->trans($data['hydra:description'], domain: 'api-response');
+        }
+
+        if (isset($data['hydra:description'])) {
+            $data['hydra:description'] =  $this->translator->trans($data['hydra:description'], domain: 'api-response');
         }
 
         $translatedContent = json_encode($data);

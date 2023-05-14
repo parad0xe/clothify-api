@@ -8,12 +8,18 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
+use App\Controller\PaypalAuthorizePaymentController;
+use App\Entity\Interface\UserOwnedInterface;
 use App\Repository\OrderRepository;
 use App\Trait\TimestampableTrait;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -21,6 +27,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new Get(
+            openapiContext: [
+                'summary' => "Récupérer une commande à partir de sa référence"
+            ],
             normalizationContext: [
                 'openapi_definition_name' => "Detail",
                 'groups' => [
@@ -38,18 +47,67 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ]
         ),
         new Post(
-            normalizationContext: [
-                'openapi_definition_name' => "Post",
-                'groups' => [
-                    'write:order'
-                ]
-            ]
+            uriTemplate: "/orders/checkout/paypal/authorize/{reference}",
+            controller: PaypalAuthorizePaymentController::class,
+            openapiContext: [
+                'summary' => "Authorisation et création de la commande",
+                'description' => "Permet de créer la commande après validation avec les serveurs de paypal.",
+            ],
+            openapi: new Operation(
+                responses: [
+                    Response::HTTP_CREATED => new \ApiPlatform\OpenApi\Model\Response(
+                        description: "La commande est validée et enregistrée.",
+                        content: new \ArrayObject([
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'isAuthorized' => ['type' => 'boolean', 'default' => "false"],
+                                        'message' => ['type' => 'string'],
+                                        'reference' => ['type' => 'string']
+                                    ]
+                                ]
+                            ]
+                        ])
+                    )
+                ],
+                requestBody: new RequestBody(
+                    content: new \ArrayObject([
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'orderItems' => [
+                                        'type' => 'array',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'properties' => [
+                                                'product' => ['type' => 'string'],
+                                                'quantity' => ['type' => 'integer'],
+                                                'totalCost' => ['type' => 'integer'],
+                                                'productAttributs' => [
+                                                    'type' => 'array',
+                                                    'items' => ['type' => 'string']
+                                                ],
+                                            ]
+                                        ],
+
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]),
+                    required: true
+                )
+            ),
+            read: false,
+            write: false,
+            name: 'authorize_payment'
         )
     ]
-
 )]
 #[ApiFilter(SearchFilter::class, strategy: 'exact', properties: ["reference" => "exact"])]
-class Order
+class Order implements UserOwnedInterface
 {
     use TimestampableTrait;
 
@@ -60,18 +118,22 @@ class Order
     #[ApiProperty(identifier: false)]
     private ?int $id = null;
 
-    #[ORM\Column(length: 200)]
-    #[Groups(["read:order", "write:order"])]
+    #[ORM\Column(length: 200, nullable: false)]
+    #[Groups(["read:order"])]
     #[ApiProperty(identifier: true)]
     private ?string $reference = null;
 
     #[ORM\Column]
-    #[Groups(["read:order", "write:order"])]
+    #[Groups(["read:order"])]
     private ?float $totalCost = null;
 
     #[ORM\Column(length: 100)]
-    #[Groups(["read:order", "write:order"])]
+    #[Groups(["read:order"])]
     private ?string $paymentMethod = null;
+
+    #[ORM\Column(length: 70)]
+    #[Groups(["read:order"])]
+    private ?string $state = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
@@ -82,12 +144,14 @@ class Order
         'persist',
         'remove'
     ], orphanRemoval: true)]
-    #[Groups(["read:order", "write:order"])]
+    #[Groups(["read:order"])]
+
+    #[Assert\Type("array")]
     private Collection $orderItems;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["read:order", "write:order"])]
+    #[Groups(["read:order"])]
     private ?Address $shippingAddress = null;
 
     public function __construct() {
@@ -124,6 +188,16 @@ class Order
 
     public function setPaymentMethod(string $paymentMethod): self {
         $this->paymentMethod = $paymentMethod;
+
+        return $this;
+    }
+
+    public function getState(): ?string {
+        return $this->state;
+    }
+
+    public function setState(string $state): self {
+        $this->state = $state;
 
         return $this;
     }

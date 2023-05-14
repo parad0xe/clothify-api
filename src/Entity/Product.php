@@ -23,6 +23,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new Get(
+            openapiContext: [
+                'summary' => "Récupérer un produit à partir de son identifiant"
+            ],
             normalizationContext: [
                 'openapi_definition_name' => "Detail",
                 "groups" => [
@@ -38,6 +41,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ]
         ),
         new GetCollection(
+            openapiContext: [
+                'summary' => "Récupérer tous les produits (avec pagination)"
+            ],
+            paginationClientItemsPerPage: false,
             normalizationContext: [
                 'openapi_definition_name' => "Collection",
                 "groups" => [

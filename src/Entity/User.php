@@ -21,6 +21,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new Get(
+            openapiContext: [
+                'summary' => "Récupérer un utilisateur à partir de son identifiant"
+            ],
             normalizationContext: [
                 'openapi_definition_name' => "Detail",
                 'groups' => [
@@ -31,6 +34,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
             ]
         ),
         new Post(
+            openapiContext: [
+                'summary' => "Créer un nouvel utilisateur"
+            ],
             normalizationContext: [
                 'openapi_definition_name' => "Post",
                 'groups' => [
@@ -40,6 +46,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
                 ]
             ],
             denormalizationContext: [
+                'openapi_definition_name' => "Post-Denormalization",
                 'groups' => [
                     "read:data:generic",
                     "read:user",
@@ -50,6 +57,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
             processor: UserPostStateProcessor::class
         ),
         new Patch(
+            openapiContext: [
+                'summary' => "Mettre à jour un utilisateur"
+            ],
             normalizationContext: [
                 'openapi_definition_name' => "Patch",
                 'groups' => [
