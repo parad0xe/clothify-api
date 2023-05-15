@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    paypal.client_id: "%env(PAYPAL_CLIENT_ID)%"
+    paypal.secret_id: "%env(PAYPAL_SECRET_ID)%"
 
 services:
     # default configuration for services in *this* file
@@ -19,6 +21,11 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\OpenApi\OpenApiFactory:
+        decorates: 'lexik_jwt_authentication.api_platform.openapi.factory'
+        arguments: [ '@App\OpenApi\OpenApiFactory.inner' ]
+        autoconfigure: false
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
