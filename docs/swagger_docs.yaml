@@ -1,0 +1,2408 @@
+openapi: 3.0.0
+info:
+  title: ''
+  description: ''
+  version: 0.0.0
+servers:
+  -
+    url: /
+    description: ''
+paths:
+  /api/login:
+    post:
+      operationId: login_check_post
+      tags:
+        - 'Login Check'
+      responses:
+        200:
+          description: 'Token utilisateur crée.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { readOnly: true, type: string, nullable: false }
+                  id: { readOnly: true, type: integer, nullable: false }
+                  firstname: { readOnly: true, type: string, nullable: false }
+                  lastname: { readOnly: true, type: string, nullable: false }
+                  expiresAt: { readOnly: true, type: string, nullable: false }
+                required:
+                  - token
+                  - id
+                  - firstname
+                  - lastname
+                  - expiresAt
+      summary: 'Création du token Utilisateur.'
+      requestBody:
+        description: 'Identifiant de connexion'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  nullable: false
+                password:
+                  type: string
+                  nullable: false
+              required:
+                - email
+                - password
+        required: true
+    parameters: []
+  '/api/orders/checkout/paypal/authorize/{reference}':
+    post:
+      operationId: authorize_payment
+      tags:
+        - Order
+      responses:
+        201:
+          description: 'La commande est validée et enregistrée.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isAuthorized: { type: boolean, default: 'false' }
+                  message: { type: string }
+                  reference: { type: string }
+        400:
+          description: 'Invalid input'
+        422:
+          description: 'Unprocessable entity'
+      summary: 'Authorisation et création de la commande'
+      description: 'Permet de créer la commande après validation avec les serveurs de paypal.'
+      parameters:
+        -
+          name: reference
+          in: path
+          description: 'Order identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderItems:
+                  type: array
+                  items: { type: object, properties: { product: { type: string }, quantity: { type: integer }, totalCost: { type: integer }, productAttributs: { type: array, items: { type: string } } } }
+        required: true
+      deprecated: false
+    parameters: []
+  '/api/orders/{reference}':
+    get:
+      operationId: api_orders_reference_get
+      tags:
+        - Order
+      responses:
+        200:
+          description: 'Order resource'
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Order.jsonld-Detail'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order-Detail'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/Order-Detail'
+        404:
+          description: 'Resource not found'
+      summary: 'Récupérer une commande à partir de sa référence'
+      description: 'Retrieves a Order resource.'
+      parameters:
+        -
+          name: reference
+          in: path
+          description: 'Order identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+      deprecated: false
+    parameters: []
+  /api/product_attributs:
+    get:
+      operationId: api_product_attributs_get_collection
+      tags:
+        - ProductAttribut
+      responses:
+        200:
+          description: 'ProductAttribut collection'
+          content:
+            application/ld+json:
+              schema:
+                type: object
+                properties:
+                  'hydra:member': { type: array, items: { $ref: '#/components/schemas/ProductAttribut.jsonld-Collection' } }
+                  'hydra:totalItems': { type: integer, minimum: 0 }
+                  'hydra:view': { type: object, properties: { '@id': { type: string, format: iri-reference }, '@type': { type: string }, 'hydra:first': { type: string, format: iri-reference }, 'hydra:last': { type: string, format: iri-reference }, 'hydra:previous': { type: string, format: iri-reference }, 'hydra:next': { type: string, format: iri-reference } }, example: { '@id': string, type: string, 'hydra:first': string, 'hydra:last': string, 'hydra:previous': string, 'hydra:next': string } }
+                  'hydra:search': { type: object, properties: { '@type': { type: string }, 'hydra:template': { type: string }, 'hydra:variableRepresentation': { type: string }, 'hydra:mapping': { type: array, items: { type: object, properties: { '@type': { type: string }, variable: { type: string }, property: { type: string, nullable: true }, required: { type: boolean } } } } } }
+                required:
+                  - 'hydra:member'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductAttribut-Collection'
+            text/html:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductAttribut-Collection'
+      summary: 'Récupérer tous les attributs de produits'
+      description: 'Retrieves the collection of ProductAttribut resources.'
+      parameters: []
+      deprecated: false
+    parameters: []
+  '/api/product_attributs/{id}':
+    get:
+      operationId: api_product_attributs_id_get
+      tags:
+        - ProductAttribut
+      responses:
+        200:
+          description: 'ProductAttribut resource'
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/ProductAttribut.jsonld-Detail'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductAttribut-Detail'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/ProductAttribut-Detail'
+        404:
+          description: 'Resource not found'
+      summary: 'Récupérer un attribut de produit à partir de son identifiant'
+      description: 'Retrieves a ProductAttribut resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'ProductAttribut identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+      deprecated: false
+    parameters: []
+  /api/products:
+    get:
+      operationId: api_products_get_collection
+      tags:
+        - Product
+      responses:
+        200:
+          description: 'Product collection'
+          content:
+            application/ld+json:
+              schema:
+                type: object
+                properties:
+                  'hydra:member': { type: array, items: { $ref: '#/components/schemas/Product.jsonld-Collection' } }
+                  'hydra:totalItems': { type: integer, minimum: 0 }
+                  'hydra:view': { type: object, properties: { '@id': { type: string, format: iri-reference }, '@type': { type: string }, 'hydra:first': { type: string, format: iri-reference }, 'hydra:last': { type: string, format: iri-reference }, 'hydra:previous': { type: string, format: iri-reference }, 'hydra:next': { type: string, format: iri-reference } }, example: { '@id': string, type: string, 'hydra:first': string, 'hydra:last': string, 'hydra:previous': string, 'hydra:next': string } }
+                  'hydra:search': { type: object, properties: { '@type': { type: string }, 'hydra:template': { type: string }, 'hydra:variableRepresentation': { type: string }, 'hydra:mapping': { type: array, items: { type: object, properties: { '@type': { type: string }, variable: { type: string }, property: { type: string, nullable: true }, required: { type: boolean } } } } } }
+                required:
+                  - 'hydra:member'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product-Collection'
+            text/html:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product-Collection'
+      summary: 'Récupérer tous les produits (avec pagination)'
+      description: 'Retrieves the collection of Product resources.'
+      parameters:
+        -
+          name: page
+          in: query
+          description: 'The collection page number'
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: integer
+            default: 1
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: name
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: description
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'price[between]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'price[gt]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'price[gte]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'price[lt]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'price[lte]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'rating[between]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'rating[gt]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'rating[gte]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'rating[lt]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'rating[lte]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: new
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: boolean
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'order[price]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+          style: form
+          explode: false
+          allowReserved: false
+        -
+          name: 'order[averageRating]'
+          in: query
+          description: ''
+          required: false
+          deprecated: false
+          allowEmptyValue: true
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+          style: form
+          explode: false
+          allowReserved: false
+      deprecated: false
+    parameters: []
+  '/api/products/{id}':
+    get:
+      operationId: api_products_id_get
+      tags:
+        - Product
+      responses:
+        200:
+          description: 'Product resource'
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/Product.jsonld-Detail'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product-Detail'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/Product-Detail'
+        404:
+          description: 'Resource not found'
+      summary: 'Récupérer un produit à partir de son identifiant'
+      description: 'Retrieves a Product resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'Product identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+      deprecated: false
+    parameters: []
+  /api/users:
+    post:
+      operationId: api_users_post
+      tags:
+        - User
+      responses:
+        201:
+          description: 'User resource created'
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-Post'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-Post'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/User-Post'
+          links: {  }
+        400:
+          description: 'Invalid input'
+        422:
+          description: 'Unprocessable entity'
+      summary: 'Créer un nouvel utilisateur'
+      description: 'Creates a User resource.'
+      parameters: []
+      requestBody:
+        description: 'The new User resource'
+        content:
+          application/ld+json:
+            schema:
+              $ref: '#/components/schemas/User.jsonld-Post-Denormalization'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User-Post-Denormalization'
+          text/html:
+            schema:
+              $ref: '#/components/schemas/User-Post-Denormalization'
+        required: true
+      deprecated: false
+    parameters: []
+  '/api/users/{id}':
+    get:
+      operationId: api_users_id_get
+      tags:
+        - User
+      responses:
+        200:
+          description: 'User resource'
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-Detail'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-Detail'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/User-Detail'
+        404:
+          description: 'Resource not found'
+      summary: 'Récupérer un utilisateur à partir de son identifiant'
+      description: 'Retrieves a User resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+      deprecated: false
+    patch:
+      operationId: api_users_id_patch
+      tags:
+        - User
+      responses:
+        200:
+          description: 'User resource updated'
+          content:
+            application/ld+json:
+              schema:
+                $ref: '#/components/schemas/User.jsonld-Patch'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User-Patch'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/User-Patch'
+          links: {  }
+        400:
+          description: 'Invalid input'
+        422:
+          description: 'Unprocessable entity'
+        404:
+          description: 'Resource not found'
+      summary: 'Mettre à jour un utilisateur'
+      description: 'Updates the User resource.'
+      parameters:
+        -
+          name: id
+          in: path
+          description: 'User identifier'
+          required: true
+          deprecated: false
+          allowEmptyValue: false
+          schema:
+            type: string
+          style: simple
+          explode: false
+          allowReserved: false
+      requestBody:
+        description: 'The updated User resource'
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      deprecated: false
+    parameters: []
+components:
+  schemas:
+    Address:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Address-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+    Address-Patch:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+    Address-Post:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+    Address-Post-Denormalization:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+    Address.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Address.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+    Address.jsonld-Patch:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+    Address.jsonld-Post:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+    Address.jsonld-Post-Denormalization:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        address:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        postalCode:
+          type: string
+    Order:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        reference:
+          type: string
+        totalCost:
+          type: number
+        paymentMethod:
+          type: string
+        state:
+          type: string
+        user:
+          type: string
+          format: iri-reference
+        orderItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Order-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        reference:
+          type: string
+        totalCost:
+          type: number
+        paymentMethod:
+          type: string
+        state:
+          type: string
+        orderItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem-Detail'
+        shippingAddress:
+          $ref: '#/components/schemas/Address-Detail'
+    Order.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        reference:
+          type: string
+        totalCost:
+          type: number
+        paymentMethod:
+          type: string
+        state:
+          type: string
+        user:
+          type: string
+          format: iri-reference
+        orderItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem.jsonld'
+        shippingAddress:
+          $ref: '#/components/schemas/Address.jsonld'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Order.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        reference:
+          type: string
+        totalCost:
+          type: number
+        paymentMethod:
+          type: string
+        state:
+          type: string
+        orderItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem.jsonld-Detail'
+        shippingAddress:
+          $ref: '#/components/schemas/Address.jsonld-Detail'
+    OrderItem:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        purchase:
+          type: string
+          format: iri-reference
+        product:
+          type: string
+          format: iri-reference
+        quantity:
+          type: integer
+        totalCost:
+          type: number
+        productAttributs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribut'
+    OrderItem-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        product:
+          $ref: '#/components/schemas/Product-Detail'
+        quantity:
+          type: integer
+        totalCost:
+          type: number
+        productAttributs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribut-Detail'
+    OrderItem.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        purchase:
+          type: string
+          format: iri-reference
+        product:
+          type: string
+          format: iri-reference
+        quantity:
+          type: integer
+        totalCost:
+          type: number
+        productAttributs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribut.jsonld'
+    OrderItem.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        product:
+          $ref: '#/components/schemas/Product.jsonld-Detail'
+        quantity:
+          type: integer
+        totalCost:
+          type: number
+        productAttributs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribut.jsonld-Detail'
+    Product-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+        quantity:
+          type: integer
+        weight:
+          type: number
+        imageUrl:
+          type: string
+          nullable: true
+        isAvailable:
+          type: boolean
+        isNew:
+          type: boolean
+        averageRating:
+          readOnly: true
+          type: number
+        brand:
+          $ref: '#/components/schemas/ProductBrand-Collection'
+        collection:
+          anyOf:
+            -
+              $ref: '#/components/schemas/ProductCollection-Collection'
+          nullable: true
+        category:
+          $ref: '#/components/schemas/ProductCategory-Collection'
+        productAttributs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribut-Collection'
+        productRating:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRating-Collection'
+    Product-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+        quantity:
+          type: integer
+        weight:
+          type: number
+        imageUrl:
+          type: string
+          nullable: true
+        isAvailable:
+          type: boolean
+        isNew:
+          type: boolean
+        averageRating:
+          readOnly: true
+          type: number
+        brand:
+          $ref: '#/components/schemas/ProductBrand-Detail'
+        collection:
+          anyOf:
+            -
+              $ref: '#/components/schemas/ProductCollection-Detail'
+          nullable: true
+        category:
+          $ref: '#/components/schemas/ProductCategory-Detail'
+        productAttributs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribut-Detail'
+        productRating:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRating-Detail'
+    Product.jsonld-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+        quantity:
+          type: integer
+        weight:
+          type: number
+        imageUrl:
+          type: string
+          nullable: true
+        isAvailable:
+          type: boolean
+        isNew:
+          type: boolean
+        averageRating:
+          readOnly: true
+          type: number
+        brand:
+          $ref: '#/components/schemas/ProductBrand.jsonld-Collection'
+        collection:
+          anyOf:
+            -
+              $ref: '#/components/schemas/ProductCollection.jsonld-Collection'
+          nullable: true
+        category:
+          $ref: '#/components/schemas/ProductCategory.jsonld-Collection'
+        productAttributs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribut.jsonld-Collection'
+        productRating:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRating.jsonld-Collection'
+    Product.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+        quantity:
+          type: integer
+        weight:
+          type: number
+        imageUrl:
+          type: string
+          nullable: true
+        isAvailable:
+          type: boolean
+        isNew:
+          type: boolean
+        averageRating:
+          readOnly: true
+          type: number
+        brand:
+          $ref: '#/components/schemas/ProductBrand.jsonld-Detail'
+        collection:
+          anyOf:
+            -
+              $ref: '#/components/schemas/ProductCollection.jsonld-Detail'
+          nullable: true
+        category:
+          $ref: '#/components/schemas/ProductCategory.jsonld-Detail'
+        productAttributs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribut.jsonld-Detail'
+        productRating:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductRating.jsonld-Detail'
+    ProductAttribut:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        value:
+          type: string
+        productAttributCategory:
+          $ref: '#/components/schemas/ProductAttributCategory'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProductAttribut-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        value:
+          type: string
+        productAttributCategory:
+          $ref: '#/components/schemas/ProductAttributCategory-Collection'
+    ProductAttribut-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        value:
+          type: string
+        productAttributCategory:
+          $ref: '#/components/schemas/ProductAttributCategory-Detail'
+    ProductAttribut.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        value:
+          type: string
+        productAttributCategory:
+          $ref: '#/components/schemas/ProductAttributCategory.jsonld'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProductAttribut.jsonld-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        value:
+          type: string
+        productAttributCategory:
+          $ref: '#/components/schemas/ProductAttributCategory.jsonld-Collection'
+    ProductAttribut.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        value:
+          type: string
+        productAttributCategory:
+          $ref: '#/components/schemas/ProductAttributCategory.jsonld-Detail'
+    ProductAttributCategory:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProductAttributCategory-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductAttributCategory-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductAttributCategory.jsonld:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProductAttributCategory.jsonld-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductAttributCategory.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductBrand-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductBrand-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductBrand.jsonld-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductBrand.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductCategory-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductCategory-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductCategory.jsonld-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductCategory.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductCollection-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductCollection-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductCollection.jsonld-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductCollection.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+    ProductRating-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        comment:
+          type: string
+        rating:
+          type: number
+    ProductRating-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+    ProductRating.jsonld-Collection:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        comment:
+          type: string
+        rating:
+          type: number
+    ProductRating.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+    User:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address'
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        roles:
+          readOnly: true
+          type: array
+          items:
+            type: string
+        userIdentifier:
+          readOnly: true
+          type: string
+    User-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address-Detail'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address-Detail'
+          nullable: true
+    User-Patch:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address-Patch'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address-Patch'
+          nullable: true
+    User-Post:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address-Post'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address-Post'
+          nullable: true
+    User-Post-Denormalization:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address-Post-Denormalization'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address-Post-Denormalization'
+          nullable: true
+    User.jsonld-Detail:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address.jsonld-Detail'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address.jsonld-Detail'
+          nullable: true
+    User.jsonld-Patch:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address.jsonld-Patch'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address.jsonld-Patch'
+          nullable: true
+    User.jsonld-Post:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        '@context':
+          readOnly: true
+          oneOf:
+            -
+              type: string
+            -
+              type: object
+              properties:
+                '@vocab':
+                  type: string
+                hydra:
+                  type: string
+                  enum: ['http://www.w3.org/ns/hydra/core#']
+              required:
+                - '@vocab'
+                - hydra
+              additionalProperties: true
+        '@id':
+          readOnly: true
+          type: string
+        '@type':
+          readOnly: true
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address.jsonld-Post'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address.jsonld-Post'
+          nullable: true
+    User.jsonld-Post-Denormalization:
+      type: object
+      description: ''
+      deprecated: false
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        username:
+          type: string
+        firstname:
+          type: string
+          nullable: true
+        lastname:
+          type: string
+          nullable: true
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+        billingAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address.jsonld-Post-Denormalization'
+          nullable: true
+        deliveryAddress:
+          anyOf:
+            -
+              $ref: '#/components/schemas/Address.jsonld-Post-Denormalization'
+          nullable: true
+  responses: {  }
+  parameters: {  }
+  examples: {  }
+  requestBodies: {  }
+  headers: {  }
+  securitySchemes:
+    JWT:
+      type: apiKey
+      description: 'Value for the Authorization header parameter.'
+      name: Authorization
+      in: header
+security:
+  -
+    JWT: []
+tags: []
