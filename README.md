@@ -91,3 +91,15 @@ La configuration est terminée, l'application démarre sur https://localhost:800
 
 La documentation complète de l'API est disponible [ici](https://parad0xe.github.io/clothify-api/). Elle fournit des détails sur les ressources
 disponibles, les paramètres acceptés, les réponses renvoyées et plus encore.
+
+## Contribuer
+
+Les contributions à ce projet sont les bienvenues ! Si vous souhaitez apporter des améliorations, des corrections de bugs ou ajouter de nouvelles
+fonctionnalités, veuillez suivre les étapes suivantes :
+
+1. Forkez ce dépôt
+2. Créez une branche pour votre fonctionnalité : `git checkout -b ma-nouvelle-fonctionnalité`
+3. Effectuez les modifications nécessaires
+4. Validez vos changements : `git commit -am 'Ajout d'une nouvelle fonctionnalité'`
+5. Poussez vos modifications vers votre dépôt forké : `git push origin ma-nouvelle-fonctionnalité`
+6. Soumettez une pull request en décrivant en détail les changements apportés
